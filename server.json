@@ -1,33 +1,37 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "eu.ansvar/lithuanian-data-protection-mcp",
-  "description": "Query VDAI decisions, sanctions, and guidance on data protection and GDPR enforcement in Lithuania",
+  "description": "VDAI (Lithuanian data protection authority) MCP server — decisions, sanctions, and guidance on GDPR enforcement in Lithuania",
   "repository": {
     "url": "https://github.com/Ansvar-Systems/lithuanian-data-protection-mcp",
     "source": "github"
   },
   "homepage": "https://ansvar.eu",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "license": "Apache-2.0",
   "keywords": [
-    "vdai",
-    "lithuanian-data-protection",
-    "gdpr",
+    "data protection",
     "lithuania",
-    "data-protection",
-    "privacy",
-    "sanctions",
+    "regulation",
     "compliance",
-    "mcp",
-    "ansvar"
+    "mcp"
   ],
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@ansvar/lithuanian-data-protection-mcp",
-      "version": "0.1.0",
+      "version": "1.0.0",
       "transport": {
         "type": "stdio"
+      }
+    },
+    {
+      "registryType": "npm",
+      "identifier": "@ansvar/lithuanian-data-protection-mcp",
+      "version": "1.0.0",
+      "transport": {
+        "type": "streamable-http",
+        "url": "https://mcp.ansvar.eu/lithuanian-data-protection/mcp"
       }
     }
   ]
