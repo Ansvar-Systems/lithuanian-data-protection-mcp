@@ -8,15 +8,27 @@
 # Override with VDAI_DB_PATH for a custom location.
 # ─────────────────────────────────────────────────────────────────────────────
 
-# --- Stage 1: Build TypeScript ---
+# --- Stage 1: Build TypeScript + native modules ---
 FROM node:20-slim AS builder
 
 WORKDIR /app
+
+# Build deps for better-sqlite3 native compile
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3 make g++ \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY package.json package-lock.json* ./
-RUN npm ci --ignore-scripts
+# Full install (including devDependencies and postinstall scripts) so that
+# better-sqlite3's native binding gets fetched/built into node_modules.
+RUN npm ci
+
 COPY tsconfig.json ./
 COPY src/ src/
 RUN npm run build
+
+# Prune to production-only dependencies; keep the compiled native bindings.
+RUN npm prune --omit=dev
 
 # --- Stage 2: Production ---
 FROM node:20-slim AS production
@@ -25,10 +37,14 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV VDAI_DB_PATH=/app/data/vdai.db
 
-COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
-
+# Reuse node_modules from builder (preserves better-sqlite3 native binding)
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist/ dist/
+COPY package.json package-lock.json* ./
+
+# Database (workflow's "Provision database" step downloads database.db.gz from
+# the GitHub Release into data/database.db before docker build runs).
+COPY data/database.db data/vdai.db
 
 # Non-root user for security
 RUN addgroup --system --gid 1001 mcp && \
